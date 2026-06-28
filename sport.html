@@ -429,3 +429,166 @@
             document.getElementById('race-view').classList.remove('hidden');
             playMusicByState();
             setupRaceStage('Q1');
+        }
+
+        function setupRaceStage(stage) {
+            currentStage = stage;
+            document.getElementById('next-stage-btn').classList.add('hidden');
+            
+            if (stage === 'Q1') {
+                document.getElementById('race-title').innerText = `🏃‍♀️ 預賽 - 第一組 (取前2名晉級)`;
+                currentGroupRunners = poolRunners.slice(0, 3);
+                document.getElementById('race-announcement').innerText = "第一組選手已就位，準備起跑！";
+            } else if (stage === 'Q2') {
+                document.getElementById('race-title').innerText = `🏃‍♀️ 預賽 - 第二組 (取前2名晉級)`;
+                currentGroupRunners = poolRunners.slice(3, 6);
+                document.getElementById('race-announcement').innerText = "第二組選手已就位，即將開跑！";
+            } else if (stage === 'F') {
+                document.getElementById('race-title').innerText = `🔥 決賽最高殿堂 (四強爭奪戰)`;
+                currentGroupRunners = qualifiedRunners;
+                document.getElementById('race-announcement').innerText = "決賽開跑！爭奪最後榮譽！";
+            }
+
+            currentGroupRunners.forEach(r => r.progress = 20);
+
+            const trackContainer = document.getElementById('track-container');
+            const finishMark = trackContainer.querySelector('.finish-line-mark');
+            trackContainer.innerHTML = '';
+            trackContainer.appendChild(finishMark);
+
+            currentGroupRunners.forEach((runner, index) => {
+                const lane = document.createElement('div');
+                lane.className = 'lane';
+                lane.innerHTML = `
+                    <div class="lane-num">${index + 1}</div>
+                    <div class="runner" id="runner-${index}" style="top: 20px;">
+                        <div class="avatar" style="background-image: var(--bg-grid-1); background-position: ${runner.posX}% ${runner.posY}%;"></div>
+                    </div>
+                `;
+                trackContainer.appendChild(lane);
+            });
+            setTimeout(runEngine, 1000);
+        }
+
+        function runEngine() {
+            const trackContainer = document.getElementById('track-container');
+            const finishLine = trackContainer.clientHeight - 65;
+            const runnerCount = currentGroupRunners.length;
+
+            raceInterval = setInterval(() => {
+                let finishedCount = 0;
+                currentGroupRunners.forEach((runner, index) => {
+                    if (runner.progress >= finishLine) { finishedCount++; return; }
+                    runner.progress += Math.random() * 11 + 3;
+                    if (runner.progress > finishLine) runner.progress = finishLine;
+                    document.getElementById(`runner-${index}`).style.top = runner.progress + 'px';
+                });
+                if (finishedCount === runnerCount) {
+                    clearInterval(raceInterval);
+                    handleStageEnd();
+                }
+            }, 50);
+        }
+
+        function handleStageEnd() {
+            const results = [...currentGroupRunners].sort((a, b) => b.progress - a.progress);
+            const nextBtn = document.getElementById('next-stage-btn');
+            const announcement = document.getElementById('race-announcement');
+
+            if (currentStage === 'Q1' || currentStage === 'Q2') {
+                statsDB[results[0].id].qualified += 1;
+                statsDB[results[1].id].qualified += 1;
+                saveDB();
+                qualifiedRunners.push(results[0], results[1]);
+                announcement.innerHTML = `<strong>本組賽事結束！</strong><br>晉級決賽：${results[0].name}、${results[1].name}`;
+                nextBtn.innerText = currentStage === 'Q1' ? "進行預賽第二組" : "進入最終決賽";
+                nextBtn.classList.remove('hidden');
+            } else if (currentStage === 'F') {
+                announcement.innerText = "決賽圓滿落幕！正在計算生涯最新名次數據...";
+                results.forEach((runner, index) => {
+                    const place = index + 1;
+                    if (place === 1) statsDB[runner.id].gold += 1;
+                    const currentBest = statsDB[runner.id].bestPlace;
+                    if (currentBest === '-' || place < parseInt(currentBest)) {
+                        statsDB[runner.id].bestPlace = `第 ${place} 名`;
+                    }
+                });
+                saveDB();
+                setTimeout(() => showFinalPodium(results), 1200);
+            }
+        }
+
+        function advanceStage() {
+            if (currentStage === 'Q1') setupRaceStage('Q2');
+            else if (currentStage === 'Q2') setupRaceStage('F');
+        }
+
+        function showFinalPodium(finalResults) {
+            document.getElementById('race-view').classList.add('hidden');
+            document.getElementById('result-view').classList.remove('hidden');
+            playMusicByState();
+
+            const podium = document.getElementById('podium');
+            podium.innerHTML = '';
+            const resultList = document.getElementById('result-list');
+            resultList.innerHTML = '<h3>決賽名次榜：</h3>';
+
+            finalResults.forEach((runner, index) => {
+                const place = index + 1;
+                if (place <= 3) {
+                    const pDiv = document.createElement('div');
+                    pDiv.className = `podium-place`;
+                    pDiv.style.order = place === 1 ? 2 : (place === 2 ? 1 : 3); 
+                    pDiv.innerHTML = `
+                        <div class="avatar" style="background-image: var(--bg-grid-0); background-position: ${runner.posX}% ${runner.posY}%;"></div>
+                        <div class="podium-block p-${place}">${place}</div>
+                    `;
+                    podium.appendChild(pDiv);
+                }
+
+                const rDiv = document.createElement('div');
+                rDiv.className = 'result-item';
+                rDiv.innerHTML = `
+                    <strong>第 ${place} 名</strong>
+                    <div class="avatar" style="width:36px; height:36px; margin-left:10px; background-image: var(--bg-grid-0); background-position: ${runner.posX}% ${runner.posY}%;"></div>
+                    <span>${runner.name}</span>
+                `;
+                resultList.appendChild(rDiv);
+            });
+        }
+
+        function saveDB() {
+            localStorage.setItem('girl_athletes_stats', JSON.stringify(statsDB));
+            for(let i=0; i<totalRunners; i++) {
+                if(document.getElementById(`stat-m-${i}`)) {
+                    document.getElementById(`stat-m-${i}`).innerText = statsDB[i].matches;
+                    document.getElementById(`stat-q-${i}`).innerText = statsDB[i].qualified;
+                    document.getElementById(`stat-g-${i}`).innerText = statsDB[i].gold;
+                    document.getElementById(`stat-b-${i}`).innerText = statsDB[i].bestPlace;
+                }
+            }
+        }
+
+        function clearData() {
+            if(confirm("確定要重置所有少女的歷史戰績嗎？此操作將不可逆！")) {
+                localStorage.removeItem('girl_athletes_stats');
+                location.reload();
+            }
+        }
+
+        function resetGame() {
+            poolRunners.length = 0;
+            qualifiedRunners.length = 0;
+            currentGroupRunners.length = 0;
+            document.querySelectorAll('.character-card').forEach(c => {
+                c.className = 'character-card'; 
+            });
+            document.getElementById('start-btn').disabled = true;
+            document.getElementById('select-tip').innerText = `目前已選擇：0 / 6 位`;
+            document.getElementById('result-view').className = 'view-panel hidden';
+            document.getElementById('setup-view').className = 'view-panel';
+            playMusicByState();
+        }
+    </script>
+</body>
+</html>
