@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>馬尾少女田徑錦標賽 (雙面翻轉+全畫面完美修復版)</title>
+    <title>馬尾少女田徑錦標賽 (賽道圓框優化版)</title>
     <style>
         :root {
             --primary: #4CAF50;
@@ -123,7 +123,7 @@
             border: none !important;
             border-radius: 0 !important;
             background: #111 !important;
-            cursor: zoom-out; /* 滑鼠游標變成縮小圖示提示 */
+            cursor: zoom-out;
         }
 
         .character-card.fullscreen .card-back .avatar {
@@ -144,7 +144,7 @@
             width: 85%; max-width: 400px;
             backdrop-filter: blur(5px); box-shadow: 0 8px 32px rgba(0,0,0,0.5);
             color: #fff; text-align: center;
-            pointer-events: none; /* 讓點擊能穿透它，點擊浮層也能順暢縮回 */
+            pointer-events: none;
         }
         .character-card.fullscreen .stat-overlay { display: block; }
         .character-card.fullscreen .mini-stats,
@@ -164,7 +164,7 @@
         .action-sub-btn.flip-btn { background: #cfd8dc; color: #37474f; width: 45%; }
         .action-sub-btn.full-btn { background: #37474f; color: white; width: 100%; margin-top: 3px;}
 
-        /* ==================== 其餘元件跑道 ==================== */
+        /* ==================== 跑道與賽道選手優化 ==================== */
         .status-announcement { background: #e8f5e9; border-left: 5px solid var(--primary); padding: 10px; margin: 10px 0; border-radius: 4px; text-align: left; font-size: 0.95rem; }
         .btn { background: var(--primary); color: white; border: none; padding: 12px 35px; font-size: 16px; border-radius: 25px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 300px; margin: 10px auto; display: block; }
         .btn:hover { background: var(--dark); }
@@ -172,13 +172,27 @@
         .track-container { background: #e0d0b0; padding: 0 10px; border-radius: 8px; margin: 15px 0; position: relative; overflow: hidden; width: 100%; height: 55vh; display: flex; justify-content: space-around; }
         .lane { flex: 1; margin: 0 2px; height: 100%; border-right: 2px dashed white; border-left: 2px dashed white; position: relative; background: #d15b3d; }
         .lane-num { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.4); font-weight: bold; font-size: 22px; z-index: 1; }
+        
+        /* 賽道跑手容器 */
         .runner { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); transition: top 0.1s linear; display: flex; flex-direction: column; align-items: center; z-index: 2; }
-        .runner .avatar { width: 50px; height: 50px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); border-radius: 50%; }
+        
+        /* ✨ 關鍵修復：讓賽道上的選手相片正確縮放到圓框大小、不扭曲變形 */
+        .runner .avatar { 
+            width: 50px; 
+            height: 50px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3); 
+            border-radius: 50%; 
+            border: 2px solid white;
+            background-size: 700% 300%; 
+            background-repeat: no-repeat;
+        }
+        
         .finish-line-mark { position: absolute; bottom: 60px; left: 0; width: 100%; height: 8px; background: repeating-linear-gradient(90deg, #fff, #fff 10px, #000 10px, #000 20px); z-index: 1; opacity: 0.8; }
 
+        /* 頒獎台與結算 */
         .podium { display: flex; justify-content: center; align-items: flex-end; margin: 20px 0; height: 160px; }
         .podium-place { display: flex; flex-direction: column; align-items: center; margin: 0 8px; width: 75px; }
-        .podium-place .avatar { width: 55px; height: 55px; border-radius: 50%; }
+        .podium-place .avatar { width: 55px; height: 55px; border-radius: 50%; border: 2px solid white; background-size: 700% 300%; background-repeat: no-repeat; }
         .podium-block { width: 100%; color: white; font-weight: bold; font-size: 20px; display: flex; justify-content: center; align-items: center; margin-top: 8px; border-radius: 6px 6px 0 0; }
         .p-1 { height: 80px; background: #ffd700; order: 2; }
         .p-2 { height: 60px; background: #c0c0c0; order: 1; }
@@ -188,6 +202,7 @@
         .result-item { display: flex; align-items: center; padding: 10px 8px; border-bottom: 1px solid #eee; }
         .result-item strong { min-width: 60px; font-size: 0.9rem; }
         .result-item span { margin-left: 15px; font-weight: bold; font-size: 0.9rem; }
+        .result-item .avatar { border-radius: 50%; background-size: 700% 300%; background-repeat: no-repeat; border: 1px solid #ccc; }
         .clear-db-btn { background: none; border: none; color: #ff5252; text-decoration: underline; font-size: 11px; cursor: pointer; margin-top: 15px; display: block; margin-left: auto; margin-right: auto;}
     </style>
 </head>
@@ -195,7 +210,6 @@
 
     <h1>🏃‍♀️ 馬尾少女田徑錦標賽 🏁</h1>
 
-    <!-- 頂部控制列 -->
     <div class="top-control-bar">
         <button class="music-btn" id="music-toggle-btn" onclick="toggleMusic()">🎵 音樂：關閉 🔇</button>
         <div class="db-action-group">
@@ -205,7 +219,6 @@
         </div>
     </div>
 
-    <!-- 步驟一：海選網格 -->
     <div id="setup-view" class="view-panel">
         <h3>【選手海選】請挑選 6 位選手參加預賽</h3>
         <p id="select-tip">目前已選擇：0 / 6 位</p>
@@ -214,7 +227,6 @@
         <button class="clear-db-btn" onclick="clearData()">⚠️ 清除所有選手歷史戰績</button>
     </div>
 
-    <!-- 步驟二：賽跑進行 -->
     <div id="race-view" class="view-panel hidden">
         <h3 id="race-title">預賽進行中...</h3>
         <div class="status-announcement" id="race-announcement">準備起跑...</div>
@@ -224,7 +236,6 @@
         <button id="next-stage-btn" class="btn hidden" onclick="advanceStage()">前進下一步驟</button>
     </div>
 
-    <!-- 步驟三：結算 -->
     <div id="result-view" class="view-panel hidden">
         <h2>🏆 決賽最終排名 🏆</h2>
         <p>（戰績已實時更新保存至地端選手卡中！）</p>
@@ -233,7 +244,6 @@
         <button class="btn" onclick="resetGame()">返回海選大廳</button>
     </div>
 
-    <!-- 音樂元件 -->
     <audio id="audio-lobby" loop src="bgm_lobby.mp3"></audio>
     <audio id="audio-race" loop src="bgm_race.mp3"></audio>
 
@@ -277,11 +287,10 @@
                 const s = statsDB[i] || { matches: 0, qualified: 0, gold: 0, bestPlace: '-' };
 
                 cardWrapper.innerHTML = `
-                    <!-- 正面 -->
                     <div class="card-front" onclick="flipCard(event, ${i})">
                         <div class="avatar" style="background-image: var(--bg-grid-0); background-position: ${posX}% ${posY}%;"></div>
                         <p>${i+1}號選手</p>
-                        <div style="width:100%;" onclick="event.stopPropagation();"> <!-- 阻止控制鈕點擊穿透翻轉卡片 -->
+                        <div style="width:100%;" onclick="event.stopPropagation();">
                             <div class="card-actions">
                                 <button class="action-sub-btn join-btn" onclick="handleSelect(event, ${i})">參賽</button>
                                 <button class="action-sub-btn flip-btn" onclick="flipCard(event, ${i})">翻轉</button>
@@ -289,13 +298,11 @@
                             <button class="action-sub-btn full-btn" onclick="goFullscreen(event, ${i})">🔎 全畫面方形</button>
                         </div>
                     </div>
-                    <!-- 背面：全螢幕狀態點擊背景任何位置都會安全縮回 -->
                     <div class="card-back" onclick="handleBackClick(event, ${i})">
                         <div class="avatar" style="background-image: var(--bg-grid-1); background-position: ${posX}% ${posY}%;"></div>
                         <div class="mini-stats">
                             場:${s.matches} 晉:${s.qualified}<br>冠:${s.gold} 最佳:${s.bestPlace}
                         </div>
-                        <!-- 全畫面專用浮層 -->
                         <div class="stat-overlay">
                             <p class="card-back-title">🏃‍♀️ ${i+1}號 生涯戰績總覽</p>
                             <div class="stat-text">出賽次數：<span id="stat-m-${i}">${s.matches}</span> 次</div>
@@ -311,28 +318,23 @@
             }
         }
 
-        // 旋轉卡片機制
         function flipCard(event, id) {
             if (event) event.stopPropagation();
             const card = document.getElementById(`card-wrapper-${id}`);
-            if (card.classList.contains('fullscreen')) return; // 全螢幕時不允許在格子內原地翻轉
+            if (card.classList.contains('fullscreen')) return;
             card.classList.toggle('flipped');
         }
 
-        // 背面點擊分流器
         function handleBackClick(event, id) {
             event.stopPropagation();
             const card = document.getElementById(`card-wrapper-${id}`);
             if (card.classList.contains('fullscreen')) {
-                // 如果是全螢幕狀態，點擊螢幕任何地方就是「退出全螢幕」
                 card.classList.remove('fullscreen');
             } else {
-                // 如果只是網格內的一般反面，點擊就「翻回正面」
                 card.classList.remove('flipped');
             }
         }
 
-        // 放大至原位全螢幕無圓框
         function goFullscreen(event, id) {
             event.stopPropagation();
             const card = document.getElementById(`card-wrapper-${id}`);
@@ -427,166 +429,3 @@
             document.getElementById('race-view').classList.remove('hidden');
             playMusicByState();
             setupRaceStage('Q1');
-        }
-
-        function setupRaceStage(stage) {
-            currentStage = stage;
-            document.getElementById('next-stage-btn').classList.add('hidden');
-            
-            if (stage === 'Q1') {
-                document.getElementById('race-title').innerText = `🏃‍♀️ 預賽 - 第一組 (取前2名晉級)`;
-                currentGroupRunners = poolRunners.slice(0, 3);
-                document.getElementById('race-announcement').innerText = "第一組選手已就位，準備起跑！";
-            } else if (stage === 'Q2') {
-                document.getElementById('race-title').innerText = `🏃‍♀️ 預賽 - 第二組 (取前2名晉級)`;
-                currentGroupRunners = poolRunners.slice(3, 6);
-                document.getElementById('race-announcement').innerText = "第二組選手已就位，即將開跑！";
-            } else if (stage === 'F') {
-                document.getElementById('race-title').innerText = `🔥 決賽最高殿堂 (四強爭奪戰)`;
-                currentGroupRunners = qualifiedRunners;
-                document.getElementById('race-announcement').innerText = "決賽開跑！爭奪最後榮譽！";
-            }
-
-            currentGroupRunners.forEach(r => r.progress = 20);
-
-            const trackContainer = document.getElementById('track-container');
-            const finishMark = trackContainer.querySelector('.finish-line-mark');
-            trackContainer.innerHTML = '';
-            trackContainer.appendChild(finishMark);
-
-            currentGroupRunners.forEach((runner, index) => {
-                const lane = document.createElement('div');
-                lane.className = 'lane';
-                lane.innerHTML = `
-                    <div class="lane-num">${index + 1}</div>
-                    <div class="runner" id="runner-${index}" style="top: 20px;">
-                        <div class="avatar" style="background-image: var(--bg-grid-1); background-position: ${runner.posX}% ${runner.posY}%;"></div>
-                    </div>
-                `;
-                trackContainer.appendChild(lane);
-            });
-            setTimeout(runEngine, 1000);
-        }
-
-        function runEngine() {
-            const trackContainer = document.getElementById('track-container');
-            const finishLine = trackContainer.clientHeight - 65;
-            const runnerCount = currentGroupRunners.length;
-
-            raceInterval = setInterval(() => {
-                let finishedCount = 0;
-                currentGroupRunners.forEach((runner, index) => {
-                    if (runner.progress >= finishLine) { finishedCount++; return; }
-                    runner.progress += Math.random() * 11 + 3;
-                    if (runner.progress > finishLine) runner.progress = finishLine;
-                    document.getElementById(`runner-${index}`).style.top = runner.progress + 'px';
-                });
-                if (finishedCount === runnerCount) {
-                    clearInterval(raceInterval);
-                    handleStageEnd();
-                }
-            }, 50);
-        }
-
-        function handleStageEnd() {
-            const results = [...currentGroupRunners].sort((a, b) => b.progress - a.progress);
-            const nextBtn = document.getElementById('next-stage-btn');
-            const announcement = document.getElementById('race-announcement');
-
-            if (currentStage === 'Q1' || currentStage === 'Q2') {
-                statsDB[results[0].id].qualified += 1;
-                statsDB[results[1].id].qualified += 1;
-                saveDB();
-                qualifiedRunners.push(results[0], results[1]);
-                announcement.innerHTML = `<strong>本組賽事結束！</strong><br>晉級決賽：${results[0].name}、${results[1].name}`;
-                nextBtn.innerText = currentStage === 'Q1' ? "進行預賽第二組" : "進入最終決賽";
-                nextBtn.classList.remove('hidden');
-            } else if (currentStage === 'F') {
-                announcement.innerText = "決賽圓滿落幕！正在計算生涯最新名次數據...";
-                results.forEach((runner, index) => {
-                    const place = index + 1;
-                    if (place === 1) statsDB[runner.id].gold += 1;
-                    const currentBest = statsDB[runner.id].bestPlace;
-                    if (currentBest === '-' || place < parseInt(currentBest)) {
-                        statsDB[runner.id].bestPlace = `第 ${place} 名`;
-                    }
-                });
-                saveDB();
-                setTimeout(() => showFinalPodium(results), 1200);
-            }
-        }
-
-        function advanceStage() {
-            if (currentStage === 'Q1') setupRaceStage('Q2');
-            else if (currentStage === 'Q2') setupRaceStage('F');
-        }
-
-        function showFinalPodium(finalResults) {
-            document.getElementById('race-view').classList.add('hidden');
-            document.getElementById('result-view').classList.remove('hidden');
-            playMusicByState();
-
-            const podium = document.getElementById('podium');
-            podium.innerHTML = '';
-            const resultList = document.getElementById('result-list');
-            resultList.innerHTML = '<h3>決賽名次榜：</h3>';
-
-            finalResults.forEach((runner, index) => {
-                const place = index + 1;
-                if (place <= 3) {
-                    const pDiv = document.createElement('div');
-                    pDiv.className = `podium-place`;
-                    pDiv.style.order = place === 1 ? 2 : (place === 2 ? 1 : 3); 
-                    pDiv.innerHTML = `
-                        <div class="avatar" style="background-image: var(--bg-grid-0); background-position: ${runner.posX}% ${runner.posY}%;"></div>
-                        <div class="podium-block p-${place}">${place}</div>
-                    `;
-                    podium.appendChild(pDiv);
-                }
-
-                const rDiv = document.createElement('div');
-                rDiv.className = 'result-item';
-                rDiv.innerHTML = `
-                    <strong>第 ${place} 名</strong>
-                    <div class="avatar" style="width:36px; height:36px; margin-left:10px; background-image: var(--bg-grid-0); background-position: ${runner.posX}% ${runner.posY}%;"></div>
-                    <span>${runner.name}</span>
-                `;
-                resultList.appendChild(rDiv);
-            });
-        }
-
-        function saveDB() {
-            localStorage.setItem('girl_athletes_stats', JSON.stringify(statsDB));
-            for(let i=0; i<totalRunners; i++) {
-                if(document.getElementById(`stat-m-${i}`)) {
-                    document.getElementById(`stat-m-${i}`).innerText = statsDB[i].matches;
-                    document.getElementById(`stat-q-${i}`).innerText = statsDB[i].qualified;
-                    document.getElementById(`stat-g-${i}`).innerText = statsDB[i].gold;
-                    document.getElementById(`stat-b-${i}`).innerText = statsDB[i].bestPlace;
-                }
-            }
-        }
-
-        function clearData() {
-            if(confirm("確定要重置所有少女的歷史戰績嗎？此操作將不可逆！")) {
-                localStorage.removeItem('girl_athletes_stats');
-                location.reload();
-            }
-        }
-
-        function resetGame() {
-            poolRunners.length = 0;
-            qualifiedRunners.length = 0;
-            currentGroupRunners.length = 0;
-            document.querySelectorAll('.character-card').forEach(c => {
-                c.className = 'character-card'; 
-            });
-            document.getElementById('start-btn').disabled = true;
-            document.getElementById('select-tip').innerText = `目前已選擇：0 / 6 位`;
-            document.getElementById('result-view').className = 'view-panel hidden';
-            document.getElementById('setup-view').className = 'view-panel';
-            playMusicByState();
-        }
-    </script>
-</body>
-</html>
