@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>馬尾少女田徑錦標賽 (1600m 縱向往返折返跑版)</title>
+    <title>馬尾少女田徑錦標賽 (大卡片 3D 翻轉修正版)</title>
     <style>
         :root {
             --primary: #4CAF50;
@@ -66,7 +66,7 @@
         .btn { background: var(--primary); color: white; border: none; padding: 12px 35px; font-size: 16px; border-radius: 25px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 320px; margin: 10px auto; display: block; }
         .btn:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* 直線跑道容器 (單人與接力共用此高自適應寬敞賽道) */
+        /* 直線跑道容器 */
         .track-container-straight { background: #e0d0b0; padding: 0 10px; border-radius: 8px; margin: 15px 0; position: relative; overflow: hidden; width: 100%; height: 55vh; display: flex; justify-content: space-around; border: 4px solid #3e2723; }
         .lane { flex: 1; margin: 0 2px; height: 100%; border-right: 2px dashed rgba(255,255,255,0.5); border-left: 2px dashed rgba(255,255,255,0.5); position: relative; background: #d15b3d; }
         .lane-num { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.3); font-weight: bold; font-size: 20px; z-index: 1; }
@@ -74,11 +74,9 @@
         /* 跑者實體節點 */
         .runner-straight { position: absolute; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 5; }
         .runner-straight .avatar { width: 44px; height: 44px; box-shadow: 0 4px 8px rgba(0,0,0,0.4); border-radius: 50%; border: 2px solid white; background-size: 700% 300%; background-repeat: no-repeat; transition: transform 0.2s ease; }
-        
-        /* 隊伍/名字微型標籤 */
         .runner-straight .lane-tag { background: rgba(0, 0, 0, 0.75); color: white; font-size: 8px; padding: 1px 4px; border-radius: 3px; margin-top: 2px; white-space: nowrap; text-align: center; max-width: 75px; overflow: hidden;}
 
-        /* 上下兩端的終點/折返線線條 */
+        /* 上下折返線 */
         .line-mark-top { position: absolute; top: 50px; left: 0; width: 100%; height: 6px; background: repeating-linear-gradient(90deg, #fff, #fff 10px, #000 10px, #000 20px); z-index: 1; opacity: 0.8; }
         .line-mark-bottom { position: absolute; bottom: 50px; left: 0; width: 100%; height: 6px; background: repeating-linear-gradient(90deg, #fff, #fff 10px, #000 10px, #000 20px); z-index: 1; opacity: 0.8; }
 
@@ -96,6 +94,8 @@
         .result-item strong { min-width: 65px; font-size: 0.9rem; }
         .result-item span { margin-left: 15px; font-weight: bold; font-size: 0.9rem; flex: 1; }
         .result-item .avatar { border-radius: 50%; background-size: 700% 300%; background-repeat: no-repeat; border: 1px solid #ccc; }
+        
+        /* 交互按鈕 */
         .card-actions { display: flex; gap: 4px; width: 100%; justify-content: space-between; }
         .action-sub-btn { padding: 3px 0; font-size: 9px; border: none; border-radius: 4px; background: #e0e0e0; font-weight: bold; cursor: pointer; text-align: center;}
         .action-sub-btn.join-btn { background: var(--primary); color: white; width: 45%; }
@@ -103,20 +103,27 @@
         .action-sub-btn.full-btn { background: #37474f; color: white; width: 100%; margin-top: 3px;}
         .clear-db-btn { background: none; border: none; color: #ff5252; text-decoration: underline; font-size: 11px; cursor: pointer; margin-top: 15px; display: block; margin-left: auto; margin-right: auto;}
 
-        /* 全螢幕彈窗 */
-        .fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.9); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: zoom-out; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+        /* ==================== 🔎 全螢幕彈窗 (保留 3D 翻面效果) ==================== */
+        .fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vw; max-height: 100vh; background: rgba(0, 0, 0, 0.85); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; padding: 20px;}
         .fullscreen-overlay.active { opacity: 1; pointer-events: auto; }
-        .fullscreen-card-container { width: 90vw; height: 90vw; max-width: 70vh; max-height: 70vh; perspective: 2000px; cursor: default; }
-        .fullscreen-card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* 大卡片容器與 3D 視角 */
+        .fullscreen-card-container { width: 280px; height: 280px; perspective: 1500px; cursor: pointer; margin-bottom: 20px; }
+        .fullscreen-card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .fullscreen-card.flipped { transform: rotateY(180deg); }
-        .fs-face-front, .fs-face-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        .fs-face-front, .fs-face-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; overflow: hidden; border: 4px solid white; background: #fafafa; }
         .fs-face-front { z-index: 2; transform: rotateY(0deg); }
         .fs-face-back { transform: rotateY(180deg); }
         .fs-avatar { width: 100%; height: 100%; background-size: 700% 300%; background-repeat: no-repeat; }
-        .stat-overlay { background: rgba(255, 255, 255, 0.95); padding: 12px 20px; border-radius: 12px; width: 90vw; max-width: 450px; margin-top: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); color: #333; text-align: center; pointer-events: auto; }
-        .stat-grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 13px; }
-        .stat-text { background: #f5f5f5; padding: 4px; border-radius: 4px; text-align: left; padding-left: 15px;}
+        
+        /* 數據浮層提示 */
+        .stat-overlay { background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 12px; width: 100%; max-width: 380px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); color: #333; text-align: center; }
+        .stat-grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; }
+        .stat-text { background: #f5f5f5; padding: 6px; border-radius: 4px; text-align: left; padding-left: 12px;}
         .stat-text span { color: #d32f2f; font-weight: bold; font-size: 15px; font-family: monospace; }
+        .fs-tip { font-size: 11px; color: #777; margin: 4px 0 10px 0; font-style: italic; }
+        .close-fs-btn { background: #ff5252; color: white; border: none; padding: 8px 20px; font-size: 12px; border-radius: 15px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
     </style>
 </head>
 <body>
@@ -166,20 +173,22 @@
     </div>
 
     <div class="fullscreen-overlay" id="fs-overlay" onclick="closeFullscreen()">
-        <div class="fullscreen-card-container" onclick="event.stopPropagation();">
+        <div class="fullscreen-card-container" onclick="event.stopPropagation(); flipFullscreenCard();">
             <div class="fullscreen-card" id="fs-card">
                 <div class="fs-face-front"><div class="fs-avatar" id="fs-img-front"></div></div>
                 <div class="fs-face-back"><div class="fs-avatar" id="fs-img-back"></div></div>
             </div>
         </div>
         <div class="stat-overlay" onclick="event.stopPropagation();">
-            <p class="card-back-title" id="fs-title">選手戰績</p>
+            <p class="card-back-title" id="fs-title" style="margin:2px 0; font-weight:bold; color:var(--dark); font-size:16px;">選手戰績</p>
+            <p class="fs-tip">💡 點擊上方大卡片可使卡片 3D 翻面</p>
             <div class="stat-grid-layout">
                 <div class="stat-text">總出賽次數：<span id="fs-stat-m">0</span> 次</div>
                 <div class="stat-text">個人晉級數：<span id="fs-stat-q">0</span> 次</div>
                 <div class="stat-text">冠軍金牌數：<span id="fs-stat-g">0</span> 次</div>
                 <div class="stat-text">個人最高名次：<span id="fs-stat-b">-</span></div>
             </div>
+            <button class="close-fs-btn" onclick="closeFullscreen()">關閉放大卡片</button>
         </div>
     </div>
 
@@ -329,6 +338,7 @@
 
         function flipCard(event, id) { event.stopPropagation(); document.getElementById(`card-wrapper-${id}`).classList.toggle('flipped'); }
         
+        /* ==================== 🔎 放大與大卡片 3D 翻轉 ==================== */
         function openFullscreen(id, posX, posY) {
             const s = statsDB[id] || { matches: 0, qualified: 0, gold: 0, bestPlace: '-' };
             document.getElementById('fs-title').innerText = `🏃‍♀️ ${id+1}號 生涯歷史數據`;
@@ -336,13 +346,25 @@
             document.getElementById('fs-stat-q').innerText = s.qualified;
             document.getElementById('fs-stat-g').innerText = s.gold;
             document.getElementById('fs-stat-b').innerText = s.bestPlace;
+            
+            // 重設卡片角度（每次打開均顯示正面）
+            document.getElementById('fs-card').classList.remove('flipped');
+            
             document.getElementById('fs-img-front').style.backgroundImage = 'var(--bg-grid-0)';
             document.getElementById('fs-img-front').style.backgroundPosition = `${posX}% ${posY}%`;
             document.getElementById('fs-img-back').style.backgroundImage = 'var(--bg-grid-1)';
             document.getElementById('fs-img-back').style.backgroundPosition = `${posX}% ${posY}%`;
+            
             document.getElementById('fs-overlay').classList.add('active');
         }
-        function closeFullscreen() { document.getElementById('fs-overlay').classList.remove('active'); }
+        
+        function flipFullscreenCard() {
+            document.getElementById('fs-card').classList.toggle('flipped');
+        }
+        
+        function closeFullscreen() { 
+            document.getElementById('fs-overlay').classList.remove('active'); 
+        }
 
         function handleSelect(event, id) {
             event.stopPropagation();
@@ -387,7 +409,7 @@
             }
         }
 
-        /* ==================== 🥇 直線引擎 (單人賽 - 由上往下 400m 衝刺) ==================== */
+        /* ==================== 🥇 直線引擎 (單人賽) ==================== */
         function setupSingleRaceStage(stage) {
             currentStage = stage;
             document.getElementById('next-stage-btn').classList.add('hidden');
@@ -411,7 +433,7 @@
             trackContainer.innerHTML = '<div class="line-mark-top"></div><div class="line-mark-bottom" style="bottom:60px;"></div>';
 
             currentGroupRunners.forEach((runner, idx) => {
-                runner.progress = 20; // 初始靠上方
+                runner.progress = 20; 
                 const lane = document.createElement('div'); lane.className = 'lane';
                 lane.innerHTML = `<div class="lane-num">${idx + 1}</div>
                     <div class="runner-straight" id="runner-node-${idx}" style="top: 20px;">
@@ -425,7 +447,7 @@
 
         function runSingleEngine() {
             const track = document.getElementById('track-straight');
-            const limitY = track.clientHeight - 110; // 抵達下方終點
+            const limitY = track.clientHeight - 110; 
             raceInterval = setInterval(() => {
                 let arriveCount = 0;
                 currentGroupRunners.forEach((runner, idx) => {
@@ -475,7 +497,7 @@
         }
 
 
-        /* ==================== 🔄 重構：1600m 直線往返大隊接力引擎 ==================== */
+        /* ==================== 🔄 1600m 直線往返大隊接力引擎 ==================== */
         function setupVerticalRelayRace() {
             document.getElementById('race-title').innerText = "🔥 1600m 縱向直線折返接力大賽 (1~4棒往返跑)";
             document.getElementById('race-announcement').innerText = "第 1 棒就位（由上往下跑）！準備起跑！";
@@ -488,7 +510,7 @@
             relayTeams.push({
                 name: "玩家代表隊", isUser: true, captain: captain,
                 runners: JSON.parse(JSON.stringify(poolRunners)), 
-                currentBaton: 0, currentLap: 1, yProgress: 20, direction: 1, // 1:由上至下, -1:由下至上
+                currentBaton: 0, currentLap: 1, yProgress: 20, direction: 1, 
                 totalDistance: 0, isFinished: false, finishTime: 0, speedModifier: 1.02
             });
 
@@ -508,13 +530,11 @@
                 });
             }
 
-            // 初始化直道場景 DOM (提供 6 個道次給 6 支接力隊)
             const trackContainer = document.getElementById('track-straight');
             trackContainer.innerHTML = '<div class="line-mark-top" style="top:25px;"></div><div class="line-mark-bottom" style="bottom:30px;"></div>';
 
             relayTeams.forEach((team, idx) => {
                 const lane = document.createElement('div'); lane.className = 'lane';
-                // 預設第 1 棒頭像與隊名
                 lane.innerHTML = `
                     <div class="lane-num">${idx + 1}</div>
                     <div class="runner-straight" id="runner-node-${idx}" style="top: 20px;">
@@ -540,37 +560,31 @@
                     if (team.isFinished) return;
                     allFinished = false;
 
-                    // 計算隨機跑步速度進度
                     let speed = (Math.random() * 7 + 3.0) * team.speedModifier;
-                    team.totalDistance += speed * 1.2; // 等比拉伸長度感受
+                    team.totalDistance += speed * 1.2; 
 
-                    // 依據當前方向（下行或上行）計算畫面的 Y 座標位置
                     if (team.direction === 1) {
                         team.yProgress += speed;
                         if (team.yProgress >= bottomLimit) {
                             team.yProgress = bottomLimit;
-                            triggerBatonHandover(team, idx); // 到達底端，準備交接/折返
+                            triggerBatonHandover(team, idx); 
                         }
                     } else {
                         team.yProgress -= speed;
                         if (team.yProgress <= topLimit) {
                             team.yProgress = topLimit;
-                            triggerBatonHandover(team, idx); // 到達頂端，準備交接/折返
+                            triggerBatonHandover(team, idx); 
                         }
                     }
 
-                    // 實時映射渲染 DOM 位置
                     const rNode = document.getElementById(`runner-node-${idx}`);
-                    if (rNode) {
-                        rNode.style.top = team.yProgress + 'px';
-                    }
+                    if (rNode) { rNode.style.top = team.yProgress + 'px'; }
 
                     if (team.currentLap > highestLap && !team.isFinished) {
                         highestLap = team.currentLap;
                     }
                 });
 
-                // 連動晶片電子音樂速度
                 if (highestLap === 4 && currentBatonLap !== 4) {
                     updateSynthState('race', 4);
                 }
@@ -582,44 +596,37 @@
             }, 50);
         }
 
-        // 核心接力棒交接與頭像變更邏輯
         function triggerBatonHandover(team, idx) {
             if (team.totalDistance >= 1600) {
-                // 跑完 4 圈共計 1600m，正式抵達終點線！
                 team.isFinished = true;
                 team.finishTime = ((Date.now() - relayStartTime) / 1000).toFixed(2);
                 document.getElementById(`lane-text-${idx}`).innerHTML = `${team.name}<br>🏁 完賽!`;
                 return;
             }
 
-            // 推進棒次與圈數
             team.currentBaton++;
             team.currentLap = team.currentBaton + 1;
-            team.direction = team.direction * -1; // 100% 垂直折返往返
+            team.direction = team.direction * -1; 
 
             const avaImg = document.getElementById(`avatar-img-${idx}`);
             const textTag = document.getElementById(`lane-text-${idx}`);
-
             let dirText = team.direction === 1 ? "下行" : "上行";
 
             if (team.currentBaton === 3) {
-                // 🌟 核心亮點：第四棒最終壓軸，強制將頭像換回「第一位挑選的隊長」頭像！
                 avaImg.style.backgroundPosition = `${team.captain.posX}% ${team.captain.posY}%`;
                 textTag.innerHTML = `${team.name}<br>⚡ <b>隊長壓軸 (${dirText})</b>`;
                 if (team.isUser) {
-                    document.getElementById('race-announcement').innerHTML = `🔥 <b>高潮！最後一棒交接！王牌隊長親自歸隊逆向暴衝！配樂全面飆速！</b>`;
+                    document.getElementById('race-announcement').innerHTML = `🔥 <b>最後一棒交接！王牌隊長親自歸隊逆向暴衝！</b>`;
                 }
             } else {
-                // 🌟 第二、三棒：切換成各自對應選擇的選手頭像與名稱
                 const nextRunner = team.runners[team.currentBaton];
                 avaImg.style.backgroundPosition = `${nextRunner.posX}% ${nextRunner.posY}%`;
                 textTag.innerHTML = `${team.name}<br>(${team.currentLap}棒/${dirText})`;
                 if (team.isUser) {
-                    document.getElementById('race-announcement').innerHTML = `⚡ 玩家隊順利交棒！目前由 <b>第 ${team.currentLap} 棒 (${nextRunner.name})</b> 展開衝刺！`;
+                    document.getElementById('race-announcement').innerHTML = `⚡ 玩家隊交棒！目前由 <b>第 ${team.currentLap} 棒 (${nextRunner.name})</b> 衝刺！`;
                 }
             }
 
-            // 給予頭像一個折返時的 Q 彈縮放視覺回饋
             avaImg.style.transform = "scale(1.3)";
             setTimeout(() => { avaImg.style.transform = "scale(1.0)"; }, 200);
         }
@@ -639,7 +646,7 @@
             });
             localStorage.setItem('girl_athletes_hybrid_db_v3', JSON.stringify(statsDB));
 
-            document.getElementById('race-announcement').innerHTML = `🎉 <b>1600m 直線往返接力大賽圓滿落幕！</b><br>第一名：🥇 ${finalSorted[0].name} (時間: ${finalSorted[0].finishTime}秒)`;
+            document.getElementById('race-announcement').innerHTML = `🎉 <b>1600m 直線往返接力大賽圓滿落幕！</b><br>第一名：🥇 ${finalSorted[0].name} (${finalSorted[0].finishTime}秒)`;
             const nextBtn = document.getElementById('next-stage-btn');
             nextBtn.innerText = "查看接力最終頒獎台"; nextBtn.classList.remove('hidden');
         }
