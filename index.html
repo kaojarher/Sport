@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>馬尾少女田徑錦標賽 (大卡片比例修正版)</title>
+    <title>馬尾少女田徑錦標賽 (單人賽賽程修正版)</title>
     <style>
         :root {
             --primary: #4CAF50;
@@ -103,11 +103,10 @@
         .action-sub-btn.full-btn { background: #37474f; color: white; width: 100%; margin-top: 3px;}
         .clear-db-btn { background: none; border: none; color: #ff5252; text-decoration: underline; font-size: 11px; cursor: pointer; margin-top: 15px; display: block; margin-left: auto; margin-right: auto;}
 
-        /* ==================== 🔎 全螢幕彈窗 (修正長寬比與 3D 效果) ==================== */
+        /* ==================== 🔎 全螢幕彈窗 ==================== */
         .fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; padding: 15px;}
         .fullscreen-overlay.active { opacity: 1; pointer-events: auto; }
         
-        /* 大卡片容器修正：維持與小卡片相同的直式比例 (寬 260px : 高 380px) */
         .fullscreen-card-container { width: 260px; height: 380px; perspective: 1500px; cursor: pointer; margin-bottom: 15px; }
         .fullscreen-card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .fullscreen-card.flipped { transform: rotateY(180deg); }
@@ -115,11 +114,8 @@
         .fs-face-front, .fs-face-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; overflow: hidden; border: 4px solid white; background: #fafafa; }
         .fs-face-front { z-index: 2; transform: rotateY(0deg); }
         .fs-face-back { transform: rotateY(180deg); }
-        
-        /* 大頭照背景在垂直方向拉高後填滿，並完美重現大廳精準裁切 */
         .fs-avatar { width: 100%; height: 100%; background-size: 700% 300%; background-repeat: no-repeat; }
         
-        /* 數據浮層提示 */
         .stat-overlay { background: rgba(255, 255, 255, 0.95); padding: 15px; border-radius: 12px; width: 100%; max-width: 380px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); color: #333; text-align: center; }
         .stat-grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; }
         .stat-text { background: #f5f5f5; padding: 6px; border-radius: 4px; text-align: left; padding-left: 12px;}
@@ -132,7 +128,6 @@
 
     <h1>🏃‍♀️ 馬尾少女田徑綜合體育場 🏁</h1>
 
-    <!-- 頂部控制列 -->
     <div class="top-control-bar">
         <button class="music-btn" id="music-toggle-btn" onclick="toggleSynthMusic(event)">🎮 啟動晶片音效：Lobby 模式 🔌</button>
         <div class="db-action-group">
@@ -142,13 +137,11 @@
         </div>
     </div>
 
-    <!-- 模式選擇 -->
     <div class="mode-selector" id="mode-selector-bar">
         <button class="mode-tab active" id="tab-single" onclick="switchGameMode('single')">🥇 個人單人預決賽 (6人)</button>
         <button class="mode-tab" id="tab-relay" onclick="switchGameMode('relay')">🔥 1600m 大隊接力 (上下折返跑)</button>
     </div>
 
-    <!-- 步驟一：海選組隊大廳 -->
     <div id="setup-view" class="view-panel">
         <h3 id="lobby-title">【個人賽大廳】請挑選 6 位選手參加預賽</h3>
         <p id="select-tip">目前已選擇：0 / 6 位</p>
@@ -157,12 +150,10 @@
         <button class="clear-db-btn" onclick="clearData()">⚠️ 清除所有選手地端戰績</button>
     </div>
 
-    <!-- 步驟二：賽事進行中 -->
     <div id="race-view" class="view-panel hidden">
         <h3 id="race-title">賽事現場進行中...</h3>
         <div class="status-announcement" id="race-announcement">準備中...</div>
         
-        <!-- 直線體育場 -->
         <div class="track-container-straight" id="track-straight">
             <div class="line-mark-top" id="line-top"></div>
             <div class="line-mark-bottom" id="line-bottom"></div>
@@ -171,7 +162,6 @@
         <button id="next-stage-btn" class="btn hidden" onclick="advanceStage()">前進下一步驟</button>
     </div>
 
-    <!-- 步驟三：結算頒獎 -->
     <div id="result-view" class="view-panel hidden">
         <h2 id="result-header">🏆 最終排名 🏆</h2>
         <p>（戰績數據已即時同步更新保存至選手卡中）</p>
@@ -180,16 +170,13 @@
         <button class="btn" onclick="resetGame()">返回海選大廳</button>
     </div>
 
-    <!-- ==================== 🔎 全螢幕大卡片彈窗元件 ==================== -->
     <div class="fullscreen-overlay" id="fs-overlay" onclick="closeFullscreen()">
-        <!-- 點擊大卡片會觸發 3D 翻轉，並阻止事件冒泡以免關閉視窗 -->
         <div class="fullscreen-card-container" onclick="event.stopPropagation(); flipFullscreenCard();">
             <div class="fullscreen-card" id="fs-card">
                 <div class="fs-face-front"><div class="fs-avatar" id="fs-img-front"></div></div>
                 <div class="fs-face-back"><div class="fs-avatar" id="fs-img-back"></div></div>
             </div>
         </div>
-        <!-- 下方數據浮層 -->
         <div class="stat-overlay" onclick="event.stopPropagation();">
             <p class="card-back-title" id="fs-title" style="margin:2px 0; font-weight:bold; color:var(--dark); font-size:16px;">選手戰績</p>
             <p class="fs-tip">💡 點擊上方大卡片可使卡片 3D 翻面</p>
@@ -213,7 +200,6 @@
         let currentStage = 'Q1'; 
         let raceInterval;
 
-        // 接力賽變數
         let relayTeams = []; 
         let relayStartTime = 0;
 
@@ -349,7 +335,6 @@
 
         function flipCard(event, id) { event.stopPropagation(); document.getElementById(`card-wrapper-${id}`).classList.toggle('flipped'); }
         
-        /* ==================== 🔎 放大與大卡片 3D 翻轉 ==================== */
         function openFullscreen(id, posX, posY) {
             const s = statsDB[id] || { matches: 0, qualified: 0, gold: 0, bestPlace: '-' };
             document.getElementById('fs-title').innerText = `🏃‍♀️ ${id+1}號 生涯歷史數據`;
@@ -358,7 +343,6 @@
             document.getElementById('fs-stat-g').innerText = s.gold;
             document.getElementById('fs-stat-b').innerText = s.bestPlace;
             
-            // 重設卡片角度（每次打開均顯示正面）
             document.getElementById('fs-card').classList.remove('flipped');
             
             document.getElementById('fs-img-front').style.backgroundImage = 'var(--bg-grid-0)';
@@ -369,13 +353,8 @@
             document.getElementById('fs-overlay').classList.add('active');
         }
         
-        function flipFullscreenCard() {
-            document.getElementById('fs-card').classList.toggle('flipped');
-        }
-        
-        function closeFullscreen() { 
-            document.getElementById('fs-overlay').classList.remove('active'); 
-        }
+        function flipFullscreenCard() { document.getElementById('fs-card').classList.toggle('flipped'); }
+        function closeFullscreen() { document.getElementById('fs-overlay').classList.remove('active'); }
 
         function handleSelect(event, id) {
             event.stopPropagation();
@@ -424,8 +403,6 @@
         function setupSingleRaceStage(stage) {
             currentStage = stage;
             document.getElementById('next-stage-btn').classList.add('hidden');
-            document.getElementById('line-top').style.display = 'block';
-            document.getElementById('line-bottom').style.display = 'block';
             
             if (stage === 'Q1') {
                 document.getElementById('race-title').innerText = `🏃‍♀️ 預賽 - 第一組 (取前2名晉級)`;
@@ -441,7 +418,7 @@
             document.getElementById('race-announcement').innerText = "運動員已在上方起跑線就位，準備起跑！";
             
             const trackContainer = document.getElementById('track-straight');
-            trackContainer.innerHTML = '<div class="line-mark-top"></div><div class="line-mark-bottom" style="bottom:60px;"></div>';
+            trackContainer.innerHTML = '<div class="line-mark-top" style="top:50px;"></div><div class="line-mark-bottom" style="bottom:50px;"></div>';
 
             currentGroupRunners.forEach((runner, idx) => {
                 runner.progress = 20; 
@@ -498,15 +475,18 @@
             }
         }
 
+        /*修正點：在點擊下一步按鈕時，確切觸發新一組的賽事載入*/
         function advanceStage() {
             if (gameMode === 'single') {
-                if (currentStage === 'Q1') setupSingleRaceStage('Q2');
-                else if (currentStage === 'Q2') setupSingleRaceStage('F');
+                if (currentStage === 'Q1') {
+                    setupSingleRaceStage('Q2');
+                } else if (currentStage === 'Q2') {
+                    setupSingleRaceStage('F');
+                }
             } else {
                 showFinalPodiumDisplay();
             }
         }
-
 
         /* ==================== 🔄 1600m 直線往返大隊接力引擎 ==================== */
         function setupVerticalRelayRace() {
@@ -516,7 +496,6 @@
             relayStartTime = Date.now();
             relayTeams = [];
 
-            // 1. 建立玩家代表隊
             const captain = poolRunners[0];
             relayTeams.push({
                 name: "玩家代表隊", isUser: true, captain: captain,
@@ -525,7 +504,6 @@
                 totalDistance: 0, isFinished: false, finishTime: 0, speedModifier: 1.02
             });
 
-            // 2. 建立 5 支 NPC 代表隊
             const cpuTeamNames = ["京都極速隊", "秋葉原電玩隊", "大阪馬尾隊", "北海道風雪隊", "沖繩海浪隊"];
             for (let i = 0; i < 5; i++) {
                 let cpuRunners = [];
